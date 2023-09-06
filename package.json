@@ -10,5 +10,11 @@
   "license": "ISC",
   "devDependencies": {
     "express": "^4.18.2"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express-session": "^1.17.3",
+    "JSV": "^4.0.2",
+    "mongoose": "^7.5.0"
   }
 }
