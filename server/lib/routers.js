@@ -1,15 +1,16 @@
 /**
- * Created by dell on 2018/1/14.
+ * Created by dell on 2023/9/14.
  * 功能说明：路由模块
  */
 'use strict';
 //使用mongoose操作mongodb数据库
 const mongoose = require('mongoose');
-const fsHandle = require('fs');
+const NodeRSA = require("node-rsa"); 
 //json 验证器
 const JSV = require('JSV').JSV;
 const BSf = require("../public/basic");
 const crud = require("./crud.js");
+const httpBaseHref = '/api';
 
 /************************************************
  * 参数 ：
@@ -17,23 +18,43 @@ const crud = require("./crud.js");
  * server：创建http服务
  * **********************************************/
 let configRoutes = function(app,server){
+  const key = new NodeRSA({b: 2048});  //2048 密钥长度
+  key.setOptions({ encryptionScheme: 'pkcs1' });//指定加密格式  不改格式得话可能会报错
+   
+  const publicKey = key.exportKey("pkcs8-public-pem");//公钥
+  const privateKey =  key.exportKey('pkcs8-private-pem'); //私钥
+  
+
   /*使用express的get方法定义路由*/
   app.get('/',function(require,response){
     //todo服务器打开窗口的方法
   });
   /*拦截所有的CRUD到达路由（包括get、post类型），设置CRUD中公共的处理，然后继续next()*/
-  app.all('/:obj_type/*?',function(request,response,next){
+  app.all(`/:obj_type/*?`,function(request,response,next){
     response.contentType('json');//统一处理CRUD共同的设置
     next();//继续后续的CRUD路由
   });
+
   /*
-   * 方法描述：登陆界面路由
+   * 方法描述：todo 获取加密publickey
+   * 详细描述：通过
+   * */
+
+  app.get(`${httpBaseHref}/publicKey`, (request,response)=> {
+    response.end(publicKey);
+  });
+
+
+  /*
+   * 方法描述：登录接口
    * 详细描述：实现用户登录、向session中存放userID
    * */
-  app.post('/login',function (request,response) {
+  app.post(`${httpBaseHref}/login`, (request,response)=> {
       let data = request.body;
       let name = data.username;
-      let password = data.password;
+      key.importKey(privateKey);//导入私钥
+      const password = key.decrypt(data.password, 'utf8');
+      console.log('password', password);
       //在用户列表中查询
       let obj_type ="userList";
       let searchObj = {
@@ -41,7 +62,7 @@ let configRoutes = function(app,server){
         value:name
       };
       let responseObj = {};//向客户端传递的结果
-      crud.readObj(obj_type,searchObj,function(data){
+      crud.readObj(obj_type,searchObj,(data)=> {
         if(data.ok && data.data.length === 1)
         {
           //查找到对应的用户，再判断密码是否正确
@@ -86,6 +107,13 @@ let configRoutes = function(app,server){
         }
       });
   });
+
+
+
+
+
+
+
   /*退出请求*/
   app.post('/logout',function (request,response) {
     let data = request.body;
@@ -114,6 +142,8 @@ let configRoutes = function(app,server){
       response.send(responseObj);
     })
   });
+
+  
   /*注册界面路由*/
   app.post("/createUser",function (request,response) {
     let data = request.body;

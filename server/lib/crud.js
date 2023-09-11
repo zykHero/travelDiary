@@ -16,7 +16,7 @@ let mongoose = require('mongoose');
 let fsHandle = require("fs");
 let JSV = require("JSV").JSV;
 //使用mongoose链接数据库
-mongoose.connect('mongodb://127.0.0.1:27017/bs');
+mongoose.connect('mongodb://127.0.0.1:27017/travelDiary');
 //监听数据库连接状态-失败
 mongoose.connection.on('error',function(error){
   console.log("数据库连接失败："+error);
@@ -131,12 +131,12 @@ let creareObj = function(obj_type,obj_map,callback){
  * 方法说明：获取数据
  * 方法名：readObj
  * 参数：
- * obj_type:要验证得先schema的名字（collection的名称）
+ * obj_type:要验证schema的名字（collection的名称）
  * find_map:通过此参数在数据库中查询到符合条件的数据
  * set_map:客户端向服务器发送的数据，用于数据库的创建数据
  * callback:回调函数
  * ******************************************/
-let readObj = function(obj_type,find_map,callback){
+let readObj = async (obj_type,find_map,callback) => {
   //通过id、内容查询
   //检验请求数据模块类型是否存在
   let type_check_map = checkType(obj_type);
@@ -189,19 +189,18 @@ let readObj = function(obj_type,find_map,callback){
       };
     }
   }
-  objTypeMap[obj_type].find(searchObj,function(err,data){
-    let response ={};
-    if (err){
-      response.ok = false;
-      response.message = err;
-      response.data = [];
-    }else{
-      response.ok = true;
-      response.message = "查询成功。";
-      response.data =data;
-    }
+  let response ={};
+  try {
+    const result = await objTypeMap[obj_type].find(searchObj);
+    response.ok = true;
+    response.message = "查询成功。";
+    response.data =result;
     callback(response);
-  });
+  } catch (error) {
+    response.ok = false;
+    response.message = error;
+    response.data = [];
+  }
 };
 
 

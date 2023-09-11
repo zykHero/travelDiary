@@ -1,5 +1,9 @@
 /*公共基本方法*/
   const crud = require('../lib/crud');
+  const NodeRSA = require("node-rsa"); 
+
+
+
   /*
   * 方法名称：createOnlyID
   * 功能描述：为用户创建有序的id
@@ -102,8 +106,22 @@
       date : currentDate.getDate()
     }
   };
+
+  /*
+  *  通过node-rsa生成公钥和密钥
+  */
+  const getRSAKey = ()=>{
+    const key = new NodeRSA({b: 2048});  //2048 密钥长度
+    key.setOptions({ encryptionScheme: 'pkcs1' });//指定加密格式  不改格式得话可能会报错
+    return {
+      key: key,
+      publicKey: key.exportKey("pkcs8-public-pem"), //公钥
+      privateKey: key.exportKey('pkcs8-private-pem') //私钥
+    }    
+  }
 module.exports={
   createOnlyID:createOnlyID,
   getCurrentDate:getCurrentDate,
-  sortArr:sortArr
+  sortArr:sortArr,
+  getRSAKey: getRSAKey
 };

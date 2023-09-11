@@ -3,21 +3,25 @@ import { Form, Input, Button } from 'antd-mobile'
 import { EyeInvisibleOutline, EyeOutline } from 'antd-mobile-icons'
 import { useNavigate } from 'react-router-dom';
 import { HttpAPI, LoginReqParams } from '../api/http-api';
+import { RSA } from '../../core/util';
 import './login.less';
 
 
 const Login: FC = () => {
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
+  let username = '';
+  let pwd = '';
   const goToSystem = () => {
     navigate('/footmark');
   };
-  const onLogin = () => {
+  const onLogin = async (username: string, pwd: string) => {
+    //由于encryption返回的时一个promise，所以需要await
+    const encryptionPwd = await new RSA().encryption(pwd) || '';
     let values: LoginReqParams = {
-      name: '',
-      pwd: ''
+      username: username,//todo 与输入框绑定
+      password: encryptionPwd as any
     };
-    goToSystem();
     new HttpAPI().login(values).then(res=>{
       console.log('登录成功了',res);
       goToSystem();
@@ -32,7 +36,10 @@ const Login: FC = () => {
       <div className='login-form'>
           <Form layout='horizontal' >
           <Form.Item label='用户名' name='username'>
-            <Input placeholder='请输入用户名' autoComplete='false' clearable />
+            <Input placeholder='请输入用户名' autoComplete='false' onChange={(value)=>{
+              console.log(value)
+              username = value;
+            }} clearable />
           </Form.Item>
           <Form.Item
             label='密码'
@@ -49,13 +56,16 @@ const Login: FC = () => {
           >
             <Input
               placeholder='请输入密码'
+              onChange={(value)=>{
+                pwd = value;
+              }}
               clearable
               type={visible ? 'text' : 'password'}
             />
           </Form.Item>
         </Form>
 
-        <Button block color='primary' size='large' onClick={()=>{onLogin()}}>登录</Button>
+        <Button block color='primary' size='large' onClick={()=>{onLogin(username,pwd)}}>登录</Button>
       </div>
        
     </>

@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios from './http';
+
 
 export type LoginReqParams ={
-    name: string,
-    pwd: string
+    username: string,
+    password: string
     code?: string
 }
 
@@ -13,14 +14,15 @@ export type AddFootMarkReqParams ={
 }
 
 export class HttpAPI {
+    httpBaseHref = '/api';
     constructor() { }
 
-    getPublicKey() {
-        return axios.get('');
+    getPublicKey(): Promise<string>{
+        return axios.get(`${this.httpBaseHref}/publicKey`).then(res=> res.data);
     }
     
     login(value: LoginReqParams) {
-        return axios.post('', value);
+        return axios.post(`${this.httpBaseHref}/login`, value);
     }
     
     addFootMarkHttp(value: AddFootMarkReqParams) {

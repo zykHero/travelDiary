@@ -103,7 +103,8 @@ module.exports = function (proxy, allowedHost) {
     // proxy,
     proxy: {
       '/api': {
-        target: 'http://192.168.0.105:8095',
+        // target: 'http://192.168.0.105:8095',
+        target: 'http://localhost:3000',
         changeOrigin: true,
         ws: true
       }
