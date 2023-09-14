@@ -200,6 +200,7 @@ let readObj = async (obj_type,find_map,callback) => {
     response.ok = false;
     response.message = error;
     response.data = [];
+    callback(response);
   }
 };
 
@@ -220,37 +221,19 @@ let updateObj = function(obj_type,find_map,set_map,callback){
     callback(type_check_map);
     return;
   }
-
-  objTypeMap[obj_type].update(find_map ,set_map,function(err,data)
-  {
-    let response = {};
-    if (err){
-      response.ok = false;
-      response.message = err;
-    }else {
-      response.ok = true;
-      response.message = "更新数据成功。";
-      /*如果修改的是shopList时，需要更新shopIDList中*/
-      if(obj_type =="shopList"){
-        let shopID = find_map.$and[0].shop_id;
-        let userID = find_map.$and[1].userID;
-        let shopList_update_obj = {
-          find_map:{
-            value:shopID,
-            userID:userID
-          },
-          set_map:{
-            value:shopID,
-            text:set_map.shopName,
-            purchasePrice:set_map.shopPrice
-          }
-        };
-        shopIDList_dataFun('update',shopList_update_obj);
-      }
-
-    }
-    callback(response);
-  })
+// updateOne()方法用于更新单条记录。如果数据库中匹配到多条记录，只会更新第一条记录
+//参考：https://www.python100.com/html/96064.html
+  objTypeMap[obj_type].updateOne(find_map ,set_map).then(res=>{
+    callback({
+      ok: true,
+      message: "更新数据成功。"
+    });
+  }).catch(error=>{
+    callback({
+      ok: false,
+      message: error
+    });
+  });
 };
 
 /**********************************************

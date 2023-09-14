@@ -77,7 +77,7 @@ let configRoutes = function(app,server){
               username:name,
               userID: data.data[0].userID
             };
-            let loginTime = new Date();
+            let loginTime = `${new Date()}`;
             let setMap ={
               loginTime:loginTime,
               isLogin:true
@@ -103,7 +103,7 @@ let configRoutes = function(app,server){
           /*查找不到用户名*/
           responseObj.ok = false;
           responseObj.message = "登陆失败";
-          response.send(responseObj);
+          response.status(401).send(responseObj);
         }
       });
   });
@@ -159,7 +159,7 @@ let configRoutes = function(app,server){
       if(resData.data.length ==0){
         let callbck =function (userId) {
           data.userID = userId;
-          data.createTime = new Date();//创建用户时间
+          data.createTime = `${new Date()}`;//创建用户时间
           data.loginTime = "";//登陆数据默认为空
           data.isLogin = false;//登陆状态为false
           crud.creareObj(obj_type,data,function(text){
