@@ -67,7 +67,7 @@ const AddFootmark: FC = () => {
           <Button block type='submit' color='primary' size='large'>提交</Button>
         }
       >
-        <Form.Item name='time' label='时间' trigger='onConfirm' rules={[{ required: true }]}
+        <Form.Item name='date' label='时间' trigger='onConfirm' rules={[{ required: true }]}
           onClick={(e, datePickerRef: RefObject<DatePickerRef>) => {
             datePickerRef.current?.open()
           }}

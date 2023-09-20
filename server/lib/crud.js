@@ -9,6 +9,10 @@ let billList = require('../mouel/billList');
 let shopID_list = require('../mouel/selectList_shopID');
 /*用户列表*/
 let userList = require('../mouel/userList');
+//地图足迹列表
+let mapPointLis = require('../mouel/map-point-list');
+
+
 const BSf = require("../public/basic");
 /*当前系统基本信息*/
 let basicConfigList = require('../mouel/basicConfig');
@@ -34,7 +38,8 @@ let objTypeMap = {
   'billList':billList,//实施记账的表
   'shopIDList':shopID_list,//商品编号表
   'userList':userList,//用户信息表格
-  'basicConfig':basicConfigList//系统基础信息表
+  'basicConfig':basicConfigList,//系统基础信息表
+  'mapPointList': mapPointLis //地图足迹列表
 };
 //加载schema
 let loadSchema = function(schema_name,schema_path){
@@ -68,64 +73,48 @@ let clearIsOnline = function(){
 
 /**********************************************
  * 方法说明：检查对象类型，是否是模块支持的（当前仅支持urser）
+ * 参数：
+ * @params1：collection-collection的名称
  * 方法名：checkType
  * ******************************************/
-let checkType = function(obj_type){
-  if(!objTypeMap[obj_type]){
-    return({
-      error_msg:"不支持"+obj_type+""
-    })
+const checkCollection = (collection)=>{
+  if(!objTypeMap[collection]){
+    return {
+      error_msg: `不支持${collection}`
+    }
   }
   return null;
 };
+
+
 
 /**********************************************
  * 方法说明：创建数据
  * 方法名：creareObj
  * 参数：
- * obj_type:要验证得先schema的名字（collection的名称）
+ * collection: collection的名称
  * obj_map:数据库的创建数据
  * callback:回调函数
  * ******************************************/
-let creareObj = function(obj_type,obj_map,callback){
-    //检验请求数据模块类型是否存在
-    let type_check_map = checkType(obj_type);
-    if(type_check_map){
-      callback(type_check_map);
-      return;
-    }
-    /*商品录入、实时记账时需要存入时间格式，便于查询*/
-   if(obj_type == "billList"||obj_type == "shopList"){
-     let year = obj_map.time.year;
-     let month = obj_map.time.month-1;
-     let date = obj_map.time.date;
-     obj_map.timeDate = new Date(year,month,date);
-   }
-  objTypeMap[obj_type].create(obj_map,function(err,data){
-    let response = {};
-    if (err){
-      response.ok = false;
-      response.message = err;
-    }else {
-      response.ok = true;
-      response.message = "添加数据成功。";
-      /*商品录入，如果创建数据成功，则需要创建对应的selectList_shopID中的值*/
-      if(obj_type == "shopList")
-      {
-        /*获取已经新建的数据*/
-        let shopIDObj = {
-          text:obj_map.shopName,//用于显示
-          value:obj_map.shop_id, //用于option的value
-          isSelected:false,//默认是不选中的
-          purchasePrice:obj_map.shopPrice,
-          userID:obj_map.userID
-        };
-        shopIDList_dataFun('add',shopIDObj);
-      }
-    }
-    callback(response);
+const creareObj = (collection,obj_map,callback)=>{
+  //检验请求数据模块类型是否存在
+  const type_check_map = checkCollection(collection);
+  if(type_check_map){
+    callback(type_check_map);
+    return;
+  }
+  objTypeMap[collection].create(obj_map).then(res=>{
+    callback({
+      ok: true,
+      message: "添加数据成功。"
+    });
+  }).catch(error=>{
+    callback({
+      ok: false,
+      message: error
+    });
   });
-};
+}
 
 /**********************************************
  * 方法说明：获取数据
@@ -139,7 +128,7 @@ let creareObj = function(obj_type,obj_map,callback){
 let readObj = async (obj_type,find_map,callback) => {
   //通过id、内容查询
   //检验请求数据模块类型是否存在
-  let type_check_map = checkType(obj_type);
+  let type_check_map = checkCollection(obj_type);
   if(type_check_map){
     callback(type_check_map);
     return;
@@ -216,7 +205,7 @@ let readObj = async (obj_type,find_map,callback) => {
  * ******************************************/
 let updateObj = function(obj_type,find_map,set_map,callback){
   //检验请求数据模块类型是否存在
-  let type_check_map = checkType(obj_type);
+  let type_check_map = checkCollection(obj_type);
   if(type_check_map){
     callback(type_check_map);
     return;
@@ -245,7 +234,7 @@ let updateObj = function(obj_type,find_map,set_map,callback){
  * callback:回调函数（错误的回调函数）
  * ******************************************/
 let destroyObj = function(obj_type,find_map,callback){
-    let type_check_map = checkType(obj_type);
+    let type_check_map = checkCollection(obj_type);
     if(type_check_map){
       /*不支持的数据库列表*/
       callback(type_check_map);
@@ -318,7 +307,7 @@ let shopIDList_dataFun = function (type,data,callback) {
 
 module.exports = {
   readObj:readObj,
-  checkType : checkType,
+  checkCollection : checkCollection,
   creareObj:creareObj,
   updateObj:updateObj,
   destroyObj:destroyObj

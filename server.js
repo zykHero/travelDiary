@@ -13,7 +13,7 @@ const express = require("express"),
   app.use(bodyParser.json());
   //托管静态文件
   app.use(express.static(__dirname+'/dist'));
-  /*配置session*/
+  /*配置session  参考：https://zhuanlan.zhihu.com/p/409813376*/
   app.use(cookieParser());
   app.use(session({
     secret : "zyk",//类似秘钥

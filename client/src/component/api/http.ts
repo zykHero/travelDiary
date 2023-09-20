@@ -3,6 +3,8 @@ import axios from 'axios';
 // http request 拦截器
 axios.interceptors.request.use(
     config => {
+        // console.log(config)
+        // config.headers.set('user',)
         return config;
     },
     err => {

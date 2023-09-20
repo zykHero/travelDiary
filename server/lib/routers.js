@@ -108,6 +108,25 @@ let configRoutes = function(app,server){
       });
   });
 
+/*添加对象的路由 - post*/
+app.post(`${httpBaseHref}/:collection/create`, (request,response)=>{
+  //新增的对象
+  let data = request.body;
+  //schema表名
+  const collection = request.params.collection;
+  /*从session中获取userID，通过userID找到对应表格中的数据*/
+  data.userID = request.session.userID;
+  // if(obj_type == "billList"){
+  //   cmddata.id = BSf.createOnlyID(obj_type,"id");
+  // }
+  if(collection === 'mapPointList') {
+    crud.creareObj(collection, data, (responseInfo)=>{
+      response.send(responseInfo);
+    });
+  }
+  
+});
+
 
 
 
@@ -188,22 +207,7 @@ let configRoutes = function(app,server){
       response.send(find_data);
     });
   });
-  /*添加创建用户对象的路由 - post*/
-  app.post('/:obj_type/create',function(request,response){
-    //向user中插入数据
-    let cmddata = request.body;
-    //schema表名
-    let obj_type = request.params.obj_type;
-    /*从session中获取userID，通过userID找到对应表格中的数据*/
-    cmddata.userID = request.session.userID;
-    if(obj_type == "billList"){
-      cmddata.id = BSf.createOnlyID(obj_type,"id");
-    }
-    //商品录入时
-    crud.creareObj(obj_type,cmddata,function(text){
-      response.send(text);
-    });
-  });
+  
   /*添加读取用户对象路由,路由中可以添加正则，如以下，id仅为数字并且至少一个*/
   app.post('/:obj_type/read',function(request,response){
     //require.params 客户端请求的参数字段对象

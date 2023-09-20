@@ -26,6 +26,6 @@ export class HttpAPI {
     }
     
     addFootMarkHttp(value: AddFootMarkReqParams) {
-        return axios.post('', value);
+        return axios.post(`${this.httpBaseHref}/mapPointList/create`, value);
     }
 }
