@@ -13,6 +13,12 @@ export type AddFootMarkReqParams ={
     time: string
 }
 
+export type MapFootPonint = {
+    address: string[],
+    date: string,
+    userID: string
+}
+
 export class HttpAPI {
     httpBaseHref = '/api';
     constructor() { }
@@ -27,5 +33,9 @@ export class HttpAPI {
     
     addFootMarkHttp(value: AddFootMarkReqParams) {
         return axios.post(`${this.httpBaseHref}/mapPointList/create`, value);
+    }
+
+    getFootMarkList() {
+        return axios.get(`${this.httpBaseHref}/mapPointList/list`);
     }
 }

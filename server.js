@@ -15,9 +15,10 @@ const express = require("express"),
   app.use(express.static(__dirname+'/dist'));
   /*配置session  参考：https://zhuanlan.zhihu.com/p/409813376*/
   app.use(cookieParser());
+  //todo session过期的处理
   app.use(session({
     secret : "zyk",//类似秘钥
-    name : "billsys_userID",//区分此系统的session
+    name : "travel_diary_userID",//区分此系统的session
     cookie :{
       //todo 优化
       maxAge:12*60*60*1000

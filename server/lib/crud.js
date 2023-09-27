@@ -120,15 +120,15 @@ const creareObj = (collection,obj_map,callback)=>{
  * 方法说明：获取数据
  * 方法名：readObj
  * 参数：
- * obj_type:要验证schema的名字（collection的名称）
+ * collection:要验证schema的名字（collection的名称）
  * find_map:通过此参数在数据库中查询到符合条件的数据
  * set_map:客户端向服务器发送的数据，用于数据库的创建数据
  * callback:回调函数
  * ******************************************/
-let readObj = async (obj_type,find_map,callback) => {
+let readObj = async (collection,find_map,callback) => {
   //通过id、内容查询
   //检验请求数据模块类型是否存在
-  let type_check_map = checkCollection(obj_type);
+  let type_check_map = checkCollection(collection);
   if(type_check_map){
     callback(type_check_map);
     return;
@@ -170,7 +170,7 @@ let readObj = async (obj_type,find_map,callback) => {
     }
   }
   else{
-    //单条件查询（只查用户）
+    //单条件查询（根据用户条件来查询）
     if(find_map.type){
       let type =find_map.type;
       searchObj = {
@@ -180,7 +180,7 @@ let readObj = async (obj_type,find_map,callback) => {
   }
   let response ={};
   try {
-    const result = await objTypeMap[obj_type].find(searchObj);
+    const result = await objTypeMap[collection].find(searchObj);
     response.ok = true;
     response.message = "查询成功。";
     response.data =result;
@@ -192,6 +192,8 @@ let readObj = async (obj_type,find_map,callback) => {
     callback(response);
   }
 };
+
+
 
 
 /**********************************************

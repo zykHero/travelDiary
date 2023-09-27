@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 // csdn：通过工具（http://datav.aliyun.com/portal/school/atlas/area_selector）获取 china的GeoJSON数据
+import { HttpAPI, MapFootPonint } from './api/http-api';
 
 import chinaMap from '../assets/json/chinaPly.json'
 // 5+以上版本没有china.json
@@ -90,44 +91,40 @@ const options = {
         borderWidth: 2
       }
     },
-    tooltip: {
-      trigger: "item",
-      show: true,
-      formatter: (params: any) => {
-        console.log(params)
-        return params.name;
-      }
-    },
-    //todo 根据添加的地点，确定data里的数据，精确到市
-    data: [{
-      name: '乌鲁木齐市',
-      value: 66,
-      //自定义特殊 tooltip，仅对该数据项有效
-      tooltip:{
-        formatter:(val:any)=>{
-          debugger
-          console.log(val)
-          return '666'
-        }
-      },
-      itemStyle: {
-        areaColor: 'yellow',
-        color: 'yellow'
-      }
-    }]
+    data:[]
   }]
 }
 
 
 const createMap = () => {
-  const MyChart = echarts.init(document.getElementById("map-container"));
+  const myChart = echarts.init(document.getElementById("map-container"));
   echarts.registerMap("china", chinaMap);
-  MyChart.setOption(options);
+  return myChart;
+}
+
+const updateMap = async (myChart: any) => {
+  let mapDataForPoint = await new HttpAPI().getFootMarkList();
+  let seriesDataPublic = {
+    itemStyle: {
+      areaColor: 'yellow',
+      color: 'yellow'
+    }
+  };
+  options.series[0].data = mapDataForPoint.data.map((ele:MapFootPonint)=>{
+    return {
+      name: ele.address[1],//[省、市、县/区]
+      ...seriesDataPublic
+    }
+  });
+  myChart.setOption(options);
+  console.log(mapDataForPoint)
 }
 
 const FootMarkMap = () => {
   useEffect(() => {
-    createMap();
+    let myChart = createMap();
+    myChart.setOption(options);
+    updateMap(myChart);
     return ()=>{
       console.log('组件卸载时的生命函数')
     }

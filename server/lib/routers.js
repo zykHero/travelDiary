@@ -36,7 +36,7 @@ let configRoutes = function(app,server){
   });
 
   /*
-   * 方法描述：todo 获取加密publickey
+   * 方法描述：获取加密publickey
    * 详细描述：通过
    * */
 
@@ -108,25 +108,39 @@ let configRoutes = function(app,server){
       });
   });
 
-/*添加对象的路由 - post*/
-app.post(`${httpBaseHref}/:collection/create`, (request,response)=>{
-  //新增的对象
-  let data = request.body;
-  //schema表名
-  const collection = request.params.collection;
-  /*从session中获取userID，通过userID找到对应表格中的数据*/
-  data.userID = request.session.userID;
-  // if(obj_type == "billList"){
-  //   cmddata.id = BSf.createOnlyID(obj_type,"id");
-  // }
-  if(collection === 'mapPointList') {
-    crud.creareObj(collection, data, (responseInfo)=>{
-      response.send(responseInfo);
-    });
-  }
-  
-});
+  /*添加对象的路由 - post*/
+  app.post(`${httpBaseHref}/:collection/create`, (request,response)=>{
+    //新增的对象
+    let data = request.body;
+    //schema表名
+    const collection = request.params.collection;
+    /*从session中获取userID，通过userID找到对应表格中的数据*/
+    data.userID = request.session.userID;
+    // if(obj_type == "billList"){
+    //   cmddata.id = BSf.createOnlyID(obj_type,"id");
+    // }
+    if(collection === 'mapPointList') {
+      crud.creareObj(collection, data, (responseInfo)=>{
+        response.send(responseInfo);
+      });
+    }
+    
+  });
 
+  /*获取表的数据-get方式*/
+  app.get(`${httpBaseHref}/:obj_type/list?*`, (request,response) => {
+    //argumens[0]:表名字，arguments[1]:获取数据之后回调函数
+    //连接数据库
+    let obj_type = request.params.obj_type,
+        findObj = {};
+    /*从session中获取userID，通过userID找到对应表格中的数据*/
+    let userID = request.session.userID;
+    findObj.type = "userID";
+    findObj.value = userID;
+    crud.readObj(obj_type,findObj,(find_data)=>{
+      response.send(find_data);
+    });
+  });
 
 
 
@@ -193,20 +207,7 @@ app.post(`${httpBaseHref}/:collection/create`, (request,response)=>{
       }
     });
   });
-  /*获取表格的数据（商品列表）-get方式*/
-  app.get('/:obj_type/list?*',function(request,response){
-    //argumens[0]:表名字，arguments[1]:获取数据之后回调函数
-    //连接数据库
-    let obj_type = request.params.obj_type,
-         findObj = {};
-    /*从session中获取userID，通过userID找到对应表格中的数据*/
-    let userID = request.session.userID;
-    findObj.type = "userID";
-    findObj.value = userID;
-    crud.readObj(obj_type,findObj,function(find_data){
-      response.send(find_data);
-    });
-  });
+  
   
   /*添加读取用户对象路由,路由中可以添加正则，如以下，id仅为数字并且至少一个*/
   app.post('/:obj_type/read',function(request,response){
