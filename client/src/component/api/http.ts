@@ -19,7 +19,7 @@ axios.interceptors.response.use(
     },
     (error)=> {
         // 对响应错误进行操作
-        return Promise.reject(error);
+        return Promise.reject(error.response.data);
     }
 );
 

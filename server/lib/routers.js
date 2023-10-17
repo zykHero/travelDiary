@@ -95,7 +95,7 @@ let configRoutes = function(app,server){
           {
             responseObj.ok = false;
             responseObj.message = "登陆失败";
-            response.send(responseObj);
+            response.status(401).send(responseObj);
           }
         }
         else

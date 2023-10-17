@@ -9,6 +9,7 @@ import './login.less';
 
 const Login: FC = () => {
   const [visible, setVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
   let username = '';
   let pwd = '';
@@ -19,14 +20,15 @@ const Login: FC = () => {
     //由于encryption返回的时一个promise，所以需要await
     const encryptionPwd = await new RSA().encryption(pwd) || '';
     let values: LoginReqParams = {
-      username: username,//todo 与输入框绑定
+      username: username,
       password: encryptionPwd as any
     };
     new HttpAPI().login(values).then(res=>{
-      console.log('登录成功了',res);
       goToSystem();
     }).catch(error=>{
-      console.log(error)
+      if (!error.ok) {
+        setErrorMessage('用户名或者密码输入错误，登录失败，请重新输入');
+      }
     })
   }
 
@@ -37,7 +39,6 @@ const Login: FC = () => {
           <Form layout='horizontal' >
           <Form.Item label='用户名' name='username'>
             <Input placeholder='请输入用户名' autoComplete='false' onChange={(value)=>{
-              console.log(value)
               username = value;
             }} clearable />
           </Form.Item>
@@ -66,6 +67,7 @@ const Login: FC = () => {
         </Form>
 
         <Button block color='primary' size='large' onClick={()=>{onLogin(username,pwd)}}>登录</Button>
+        <p className='error-info'>{errorMessage}</p>
       </div>
        
     </>

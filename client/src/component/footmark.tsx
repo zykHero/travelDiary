@@ -1,5 +1,5 @@
-import React, { FC } from 'react'
-import { Tabs , Button } from 'antd-mobile'
+import { FC, useState } from 'react'
+import { Button } from 'antd-mobile'
 import {
   Route,
   useNavigate,
@@ -9,15 +9,26 @@ import {
 import { FootMarkMap } from './footMarkMap';
 
 const Footmark: FC =()=> {
+  const [isShowUserList, setShowUserList] = useState(false);
+  const [isShowUserListButton, setShowUserListButton] = useState(false);
+
   const navigate =useNavigate();
   const addFootmark = ()=>{
     navigate('/add-footmark');
   }
+  const changeUserListButtonDisplay = (isShow: boolean) =>{
+    setShowUserListButton(isShow);
+  }
   return (
     <div>
+      <div style={{paddingTop: '16px'}}>
         <Button color='primary' fill='solid' onClick={()=>{addFootmark()}}>添加足迹</Button>
-        <FootMarkMap />
+        {isShowUserListButton ? <Button fill='solid' style={{marginLeft: '16px'}} onClick={()=>{setShowUserList(!isShowUserList)}}>{isShowUserList ? '收起用户列表' : '展开用户列表'}</Button>
+        : null}
+        <FootMarkMap isShowUserList={isShowUserList} changeUserListButtonDisplay={changeUserListButtonDisplay} />
+      </div>
     </div>
+    
   );
 }
 

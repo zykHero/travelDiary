@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 // csdn：通过工具（http://datav.aliyun.com/portal/school/atlas/area_selector）获取 china的GeoJSON数据
 import { HttpAPI, MapFootPonint } from './api/http-api';
-
-import chinaMap from '../assets/json/chinaPly.json'
+import { Image, List, SpinLoading } from 'antd-mobile';
+import chinaMap from '../assets/json/chinaPly.json';
+import './footMarkMap.less';
 // 5+以上版本没有china.json
 const echarts = require("echarts");
 
@@ -10,10 +11,10 @@ const options = {
   // tooltip: {
   //   trigger: "item",
   //   show: true,
-    // formatter: (params: any) => {
-    //   console.log(params)
-    //   return 'zyk';
-    // }
+  // formatter: (params: any) => {
+  //   console.log(params)
+  //   return 'zyk';
+  // }
   // },
   // geo: {
   //   map: 'china', //使用 registerMap 注册的地图名称。
@@ -62,7 +63,7 @@ const options = {
       return params.name;
     }
   },
-  series:[{
+  series: [{
     type: 'map',
     map: 'china',
     roam: true, //缩放，开启缩放或者平移，可以设置成 'scale' 或者 'move'， true都开启
@@ -91,7 +92,7 @@ const options = {
         borderWidth: 2
       }
     },
-    data:[]
+    data: []
   }]
 }
 
@@ -102,35 +103,71 @@ const createMap = () => {
   return myChart;
 }
 
-const updateMap = async (myChart: any) => {
-  let mapDataForPoint = await new HttpAPI().getFootMarkList();
+const updateMap = (myChart: any, mapDataForPoint: any) => {
   let seriesDataPublic = {
     itemStyle: {
       areaColor: 'yellow',
       color: 'yellow'
     }
   };
-  options.series[0].data = mapDataForPoint.data.map((ele:MapFootPonint)=>{
+  options.series[0].data = mapDataForPoint.map((ele: MapFootPonint) => {
     return {
       name: ele.address[1],//[省、市、县/区]
       ...seriesDataPublic
     }
   });
   myChart.setOption(options);
-  console.log(mapDataForPoint)
 }
 
-const FootMarkMap = () => {
+
+const FootMarkMap: any = (prop:{isShowUserList: boolean, changeUserListButtonDisplay: any}) => {
+  const [markList, setMarkList] = useState([]);
   useEffect(() => {
     let myChart = createMap();
     myChart.setOption(options);
-    updateMap(myChart);
-    return ()=>{
+    new HttpAPI().getFootMarkList().then(res => {
+      const newmarkList = res.data.map((ele: any) => ele);
+      const isShow = newmarkList.length > 0;
+      updateMap(myChart, newmarkList);
+      prop.changeUserListButtonDisplay(isShow);
+      setMarkList(newmarkList);
+    }).catch(error => {
+      prop.changeUserListButtonDisplay(false);
+      setMarkList([]);
+    })
+    return () => {
       console.log('组件卸载时的生命函数')
     }
-  });
+  }, []);
   return (
-    <div id='map-container' style={{ 'height': '85vh' }}></div>
+    <>
+      <div className='foot-mark-map'>
+        {prop.isShowUserList ?
+          <div className='foot-list'>
+            <List header='足迹列表'>
+              {markList.map((point: any) => (
+                <List.Item
+                  key={point._id}
+                  prefix={
+                    <Image
+                      src={point.imageSrc}
+                      style={{ borderRadius: 20 }}
+                      fit='cover'
+                      width={40}
+                      height={40}
+                    />
+                  }
+                  description={point.notes || '-'}
+                >
+                  {point.address.join('-')}
+                </List.Item>
+              ))}
+            </List>
+          </div>
+          : null}
+        <div id='map-container'></div>
+      </div>
+    </>
   );
 }
 

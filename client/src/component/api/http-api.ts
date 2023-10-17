@@ -24,7 +24,7 @@ export class HttpAPI {
     constructor() { }
 
     getPublicKey(): Promise<string>{
-        return axios.get(`${this.httpBaseHref}/publicKey`).then(res=> res.data);
+        return axios.get(`${this.httpBaseHref}/publicKey`);
     }
     
     login(value: LoginReqParams) {
